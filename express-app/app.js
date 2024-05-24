@@ -9,14 +9,6 @@ const error404 = require("./src/middlewares/error404.js");
 // Initialize App
 const app = express();
 
-// db.execute("SELECT * FROM Products")
-//   .then((result) => {
-//     console.log(result[0]);
-//   })
-//   .catch((err) => {
-//     console.log(err);
-//   });
-
 // Parsing Request Bodies
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

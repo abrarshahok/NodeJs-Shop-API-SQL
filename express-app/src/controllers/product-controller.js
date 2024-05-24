@@ -1,14 +1,19 @@
 const Product = require("../models/product.js");
 
-const addProduct = (req, res, next) => {
+const addProduct = async (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
     return res.status(400).send({ message: "Body cannot be empty" });
   }
+
   const { name, price, description } = req.body;
+
   let id = Date.now().toString();
+
   const product = new Product(id, name, price, description);
-  Product.addProduct(product);
-  res.send({ message: "Prodct Added Sucessfully", body: product });
+
+  const resp = await Product.addProduct(product);
+
+  res.send(resp);
 };
 
 const getProducts = async (req, res, next) => {

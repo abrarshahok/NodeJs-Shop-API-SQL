@@ -26,21 +26,22 @@ class Product {
     this.description = description;
   }
 
-  static addProduct(product) {
-    getProductsFromFile((products) => {
-      products.push(product);
-      saveProductsToFile(products, (err) => {
-        if (err) {
-          return { statusCode: 500, message: "Error saving product" };
-        } else {
-          return {
-            statusCode: 200,
-            message: `Product added successfully`,
-            body: product,
-          };
-        }
-      });
-    });
+  static async addProduct(product) {
+    const result = await db.execute(
+      "INSERT INTO Products (id, name, price, description) VALUES (?, ?, ?, ?)",
+      [product.id, product.name, product.price, product.description]
+    );
+
+    const isAdded = result[0].affectedRows != 0;
+    if (isAdded) {
+      return {
+        statusCode: 200,
+        message: "Product added successfully",
+        body: product,
+      };
+    }
+
+    return { statusCode: 500, message: "Failed to add product" };
   }
 
   static async fetchAll() {
