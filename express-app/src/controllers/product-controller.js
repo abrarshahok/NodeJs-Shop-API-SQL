@@ -26,7 +26,7 @@ const addProduct = async (req, res, next) => {
 
 const getProducts = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
+    const products = await req.user.getProducts();
 
     return res.status(200).json({ success: true, data: products });
   } catch (error) {
@@ -54,10 +54,9 @@ const updateProduct = async (req, res, next) => {
       });
     }
 
-    product.title = title || product.title;
-    product.price = price || product.price;
-    product.description = description || product.description;
-    product.userId = product.userId;
+    product.title = title ?? product.title;
+    product.price = price ?? product.price;
+    product.description = description ?? product.description;
 
     await product.save();
 

@@ -6,6 +6,7 @@ const errorHandler = require("../utils/error-handler.js");
 
 const addOrder = async (req, res, next) => {
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
@@ -35,9 +36,11 @@ const addOrder = async (req, res, next) => {
 
 const getAllOrders = async (req, res, next) => {
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
   const { userId } = req.body;
   try {
     const orders = await Order.findAll({ where: { userId: userId } });

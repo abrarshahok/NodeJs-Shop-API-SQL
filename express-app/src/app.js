@@ -1,17 +1,21 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const sequelize = require("./utils/database.js");
 
+// Route Imports
 const adminRoutes = require("./routes/admin.js");
 const shopRoutes = require("./routes/shop.js");
 const cartRoutes = require("./routes/cart.js");
 const orderRoutes = require("./routes/order.js");
 
-const sequelize = require("./utils/database.js");
-const error404 = require("./middlewares/error404.js");
+// Model Imports
 const Product = require("./models/product.js");
 const User = require("./models/user.js");
 const Cart = require("./models/cart.js");
 const Order = require("./models/order.js");
+const CartItem = require("./models/cart-item.js");
+
+const error404 = require("./middlewares/error404.js");
 
 // Initialize App
 const app = express();
@@ -44,7 +48,7 @@ app.use(error404);
 // Listening to Server
 app.listen(3000);
 
-// Association
+// Association (Relations)
 Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
 User.hasMany(Product);
 
@@ -52,9 +56,16 @@ Order.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
 User.hasMany(Order);
 
 Cart.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+User.hasMany(Cart);
+
+User.hasOne(Cart);
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
 
 // Logging ORM Output
 sequelize
+  // .sync({ force: true })
   .sync()
   .then((_) => {
     return User.findByPk(1);
@@ -65,8 +76,11 @@ sequelize
     }
     return user;
   })
-  .then((user) => {
-    console.log(user);
+  .then(async (user) => {
+    const cart = await user.getCart();
+    if (!cart) {
+      return user.createCart();
+    }
   })
   .catch((err) => {
     console.log(err);
