@@ -1,68 +1,130 @@
 const Product = require("../models/product.js");
+const { validationResult } = require("express-validator");
+const errorHandler = require("../utils/error-handler.js");
 
 const addProduct = async (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    return res.status(400).send({ message: "Body cannot be empty" });
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, price, description } = req.body;
+  const { title, price, description } = req.body;
 
-  let id = Date.now().toString();
+  try {
+    const newProduct = await req.user.createProduct({
+      title,
+      price,
+      description,
+    });
 
-  const product = new Product(id, name, price, description);
-
-  const resp = await Product.addProduct(product);
-
-  res.send(resp);
+    return res.status(201).json({ success: true, data: newProduct });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const getProducts = async (req, res, next) => {
-  const products = await Product.fetchAll();
-  res.send(products);
+  try {
+    const products = await Product.findAll();
+
+    return res.status(200).json({ success: true, data: products });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const updateProduct = async (req, res, next) => {
-  console.log(req.body);
-  if (Object.keys(req.body).length === 0) {
-    return res.status(400).send({ message: "Body cannot be empty" });
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-  const id = req.params.productId;
-  const { name, price, description } = req.body;
+
+  const { productId } = req.params;
+  const { title, price, description } = req.body;
+
   try {
-    const updatedProduct = await Product.updateProduct(
-      id,
-      name,
-      price,
-      description
-    );
-    res.send(updatedProduct);
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: `Product with id: ${productId} not found`,
+      });
+    }
+
+    product.title = title || product.title;
+    product.price = price || product.price;
+    product.description = description || product.description;
+    product.userId = product.userId;
+
+    await product.save();
+
+    return res.status(200).json({ success: true, data: product });
   } catch (error) {
-    res.status(error.statusCode || 500).send({ message: error.message });
+    next(error);
   }
 };
 
 const deleteProduct = async (req, res, next) => {
-  const id = req.params.productId;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { productId } = req.params;
   try {
-    const resp = await Product.deleteProduct(id);
-    res.send(resp);
+    const deleted = await Product.destroy({
+      where: { id: productId, userId: req.user.id },
+    });
+
+    console.log(deleted);
+
+    if (deleted) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Product deleted" });
+    }
+
+    return res
+      .status(404)
+      .json({ success: false, message: "Failed to delete product" });
   } catch (error) {
-    res.status(error.statusCode || 500).send({ message: error.message });
+    next(error);
   }
 };
 
 const getProductById = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { productId } = req.params;
   try {
-    const id = req.params.productId;
-    const product = await Product.getProductById(id);
-    res.send(product);
+    const product = await Product.findByPk(productId);
+
+    if (product) {
+      return res.status(200).json({ success: true, data: product });
+    }
+
+    return res.status(404).json({
+      success: false,
+      message: `Product with id: ${productId} not found`,
+    });
   } catch (error) {
-    res.status(error.statusCode || 500).send({ message: error.message });
+    next(error);
   }
 };
 
-exports.getProducts = getProducts;
-exports.addProduct = addProduct;
-exports.getProductById = getProductById;
-exports.updateProduct = updateProduct;
-exports.deleteProduct = deleteProduct;
+module.exports = {
+  getProducts,
+  addProduct,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  errorHandler,
+};
