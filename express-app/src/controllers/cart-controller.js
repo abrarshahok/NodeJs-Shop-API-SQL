@@ -5,16 +5,6 @@ const errorHandler = require("../utils/error-handler.js");
 
 const Product = require("../models/product.js");
 
-// const getCart = async (req, res, next) => {
-//   try {
-//     const cart = await req.user.getCart();
-//     console.log(cart);
-//     return cart.getProducts();
-//   } catch (error) {
-//     next(errorHandler);
-//   }
-// };
-
 const addToCart = async (req, res, next) => {
   const errors = validationResult(req);
 
@@ -62,6 +52,61 @@ const addToCart = async (req, res, next) => {
   }
 };
 
+const removeProductFromCart = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { productId } = req.body;
+  try {
+    const cart = await req.user.getCart();
+
+    const cartProducts = await cart.getProducts({
+      where: { id: productId },
+    });
+
+    let success = null;
+
+    if (cartProducts.length > 0) {
+      const product = cartProducts[0];
+
+      if (product.cartItem.quantity > 1) {
+        product.cartItem.quantity -= 1;
+
+        success = await product.cartItem.save();
+
+        if (success) {
+          return res.send({
+            success: true,
+            body: `Quantity decreased of product with id:${productId}. New Quantity: ${product.cartItem.quantity}`,
+          });
+        }
+      } else {
+        success = await product.cartItem.destroy();
+
+        if (success) {
+          return res.send({
+            success: true,
+            body: `Product with id:${productId} removed from cart`,
+          });
+        }
+      }
+    } else {
+      return res.send({
+        success: false,
+        message: "Product not found in cart!",
+      });
+    }
+
+    return res.send({ success: false, message: "Failed to add product" });
+  } catch (error) {
+    console.log(error);
+    next(errorHandler);
+  }
+};
+
 const getAllCartProducts = async (req, res, next) => {
   const errors = validationResult(req);
 
@@ -72,6 +117,7 @@ const getAllCartProducts = async (req, res, next) => {
   const { userId } = req.body;
   try {
     const cart = await req.user.getCart();
+
     const cartProducts = await cart.getProducts({ where: { userId: userId } });
 
     if (cartProducts.length > 0) {
@@ -88,4 +134,5 @@ const getAllCartProducts = async (req, res, next) => {
 module.exports = {
   addToCart,
   getAllCartProducts,
+  removeProductFromCart,
 };
