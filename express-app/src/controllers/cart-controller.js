@@ -26,6 +26,13 @@ const addToCart = async (req, res, next) => {
       product.cartItem.quantity += 1;
 
       success = await product.cartItem.save();
+
+      if (success) {
+        return res.send({
+          success: true,
+          message: `Quantity increased of product with id:${productId}. New Quantity: ${product.cartItem.quantity}`,
+        });
+      }
     } else {
       const newQuantity = 1;
 
@@ -35,16 +42,16 @@ const addToCart = async (req, res, next) => {
         success = await cart.addProduct(product, {
           through: { quantity: newQuantity },
         });
-      } else {
-        return res.send({ success: false, body: "Product not found!" });
-      }
-    }
 
-    if (success) {
-      return res.send({
-        success: true,
-        body: `Product with id:${productId} added to cart`,
-      });
+        if (success) {
+          return res.send({
+            success: true,
+            message: `Product with id:${productId} added to cart`,
+          });
+        }
+      } else {
+        return res.send({ success: false, message: "Product not found!" });
+      }
     }
 
     return res.send({ success: false, message: "Failed to add product" });
@@ -83,7 +90,7 @@ const removeProductFromCart = async (req, res, next) => {
         if (success) {
           return res.send({
             success: true,
-            body: `Quantity decreased of product with id:${productId}. New Quantity: ${product.cartItem.quantity}`,
+            message: `Quantity decreased of product with id:${productId}. New Quantity: ${product.cartItem.quantity}`,
           });
         }
       } else {
@@ -92,7 +99,7 @@ const removeProductFromCart = async (req, res, next) => {
         if (success) {
           return res.send({
             success: true,
-            body: `Product with id:${productId} removed from cart`,
+            message: `Product with id:${productId} removed from cart`,
           });
         }
       }
@@ -127,7 +134,7 @@ const getAllCartProducts = async (req, res, next) => {
       return res.send({ success: true, body: cartProducts });
     }
 
-    return res.send({ success: false, body: "Cart is empty!" });
+    return res.send({ success: false, message: "Cart is empty!" });
   } catch (error) {
     console.log(error);
     next(errorHandler);
