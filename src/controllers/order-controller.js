@@ -8,7 +8,7 @@ const placeOrder = async (req, res, next) => {
     const cartProducts = await cart.getProducts();
 
     if (cartProducts.length <= 0) {
-      return res.send({ success: false, body: "Cart is empty!" });
+      return res.send({ success: false, message: "Cart is empty!" });
     }
 
     const order = await req.user.createOrder();
@@ -21,7 +21,7 @@ const placeOrder = async (req, res, next) => {
     );
 
     if (!success) {
-      return res.send({ success: false, body: "Order failed to place" });
+      return res.send({ success: false, message: "Order failed to place" });
     }
 
     await cart.setProducts(null);
