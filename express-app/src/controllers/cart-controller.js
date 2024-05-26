@@ -1,9 +1,7 @@
-const Cart = require("../models/cart.js");
+const Product = require("../models/product.js");
 
 const { validationResult, body } = require("express-validator");
 const errorHandler = require("../utils/error-handler.js");
-
-const Product = require("../models/product.js");
 
 const addToCart = async (req, res, next) => {
   const errors = validationResult(req);
@@ -24,11 +22,15 @@ const addToCart = async (req, res, next) => {
 
     if (cartProducts.length > 0) {
       const product = cartProducts[0];
+
       product.cartItem.quantity += 1;
+
       success = await product.cartItem.save();
     } else {
       const newQuantity = 1;
+
       const product = await Product.findByPk(productId);
+
       if (product) {
         success = await cart.addProduct(product, {
           through: { quantity: newQuantity },
@@ -60,6 +62,7 @@ const removeProductFromCart = async (req, res, next) => {
   }
 
   const { productId } = req.body;
+
   try {
     const cart = await req.user.getCart();
 
