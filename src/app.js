@@ -16,6 +16,7 @@ const CartItem = require("./models/cart-item.js");
 const Order = require("./models/order.js");
 const OrderItem = require("./models/order-item.js");
 
+// Error Route
 const error404 = require("./middlewares/error404.js");
 
 // Initialize App
