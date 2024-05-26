@@ -54,9 +54,9 @@ const updateProduct = async (req, res, next) => {
       });
     }
 
-    product.title = title ?? product.title;
-    product.price = price ?? product.price;
-    product.description = description ?? product.description;
+    if (title !== undefined) product.title = title;
+    if (price !== undefined) product.price = price;
+    if (description !== undefined) product.description = description;
 
     await product.save();
 
