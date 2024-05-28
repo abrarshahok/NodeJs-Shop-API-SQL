@@ -12,7 +12,7 @@ const addProduct = async (req, res, next) => {
   const { title, price, description } = req.body;
 
   try {
-    const newProduct = await req.user.createProduct({
+    const newProduct = await req.session.user.createProduct({
       title,
       price,
       description,
@@ -26,7 +26,12 @@ const addProduct = async (req, res, next) => {
 
 const getProducts = async (req, res, next) => {
   try {
-    const products = await req.user.getProducts();
+    let products;
+    if (req.session.user) {
+      products = await req.session.user.getProducts();
+    } else {
+      products = await Product.findAll();
+    }
 
     return res.status(200).json({ success: true, data: products });
   } catch (error) {
@@ -76,7 +81,7 @@ const deleteProduct = async (req, res, next) => {
   const { productId } = req.params;
   try {
     const deleted = await Product.destroy({
-      where: { id: productId, userId: req.user.id },
+      where: { id: productId, userId: req.session.user.id },
     });
 
     console.log(deleted);

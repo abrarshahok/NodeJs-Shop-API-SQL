@@ -1,6 +1,8 @@
 const express = require("express");
+const session = require("express-session");
 const bodyParser = require("body-parser");
 const sequelize = require("./utils/database.js");
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
 // Route Imports
 const adminRoutes = require("./routes/admin.js");
@@ -19,6 +21,7 @@ const OrderItem = require("./models/order-item.js");
 
 // Error Route
 const error404 = require("./middlewares/error404.js");
+const { authStateChecker } = require("./controllers/auth-controller.js");
 
 // Initialize App
 const app = express();
@@ -27,11 +30,29 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Initlizing session
+const sqlStore = new SequelizeStore({ db: sequelize });
+
+app.use(
+  session({
+    secret: "my secret",
+    store: sqlStore,
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
+
 // Get Dummy User
 app.use((req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
   User.findByPk(1)
     .then((user) => {
-      req.user = user;
+      req.session.user = user;
       next();
     })
     .catch((error) => {
@@ -40,11 +61,11 @@ app.use((req, res, next) => {
 });
 
 // App Routes
-app.use("/admin", adminRoutes);
-app.use("/shop", shopRoutes);
-app.use("/cart", cartRoutes);
-app.use("/order", orderRoutes);
 app.use("/auth", authRoutes);
+app.use("/shop", shopRoutes);
+app.use("/admin", adminRoutes);
+app.use("/cart", authStateChecker, cartRoutes);
+app.use("/order", authStateChecker, orderRoutes);
 
 // Called when no route is matched
 app.use(error404);

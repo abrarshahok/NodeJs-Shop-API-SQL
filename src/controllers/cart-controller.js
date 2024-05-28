@@ -12,7 +12,7 @@ const addToCart = async (req, res, next) => {
 
   const { productId } = req.body;
   try {
-    const cart = await req.user.getCart();
+    const cart = await req.session.user.getCart();
 
     const cartProducts = await cart.getProducts({
       where: { id: productId },
@@ -71,7 +71,7 @@ const removeProductFromCart = async (req, res, next) => {
   const { productId } = req.body;
 
   try {
-    const cart = await req.user.getCart();
+    const cart = await req.session.user.getCart();
 
     const cartProducts = await cart.getProducts({
       where: { id: productId },
@@ -118,17 +118,12 @@ const removeProductFromCart = async (req, res, next) => {
 };
 
 const getAllCartProducts = async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { userId } = req.body;
   try {
-    const cart = await req.user.getCart();
+    const cart = await req.session.user.getCart();
 
-    const cartProducts = await cart.getProducts({ where: { userId: userId } });
+    const cartProducts = await cart.getProducts({
+      where: { userId: req.session.user.id },
+    });
 
     if (cartProducts.length > 0) {
       return res.send({ success: true, body: cartProducts });

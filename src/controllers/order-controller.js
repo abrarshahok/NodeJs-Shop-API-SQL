@@ -3,7 +3,7 @@ const errorHandler = require("../utils/error-handler.js");
 
 const placeOrder = async (req, res, next) => {
   try {
-    const cart = await req.user.getCart();
+    const cart = await req.session.user.getCart();
 
     const cartProducts = await cart.getProducts();
 
@@ -11,7 +11,7 @@ const placeOrder = async (req, res, next) => {
       return res.send({ success: false, message: "Cart is empty!" });
     }
 
-    const order = await req.user.createOrder();
+    const order = await req.session.user.createOrder();
 
     const success = await order.addProducts(
       cartProducts.map((product) => {
@@ -40,7 +40,7 @@ const getAllOrders = async (req, res, next) => {
   }
 
   try {
-    const orders = await req.user.getOrders({ include: ["products"] });
+    const orders = await req.session.user.getOrders({ include: ["products"] });
 
     res.send({ success: true, body: orders });
   } catch (error) {
