@@ -1,6 +1,6 @@
 const Product = require("../models/product.js");
 
-const { validationResult, body } = require("express-validator");
+const { validationResult } = require("express-validator");
 const errorHandler = require("../utils/error-handler.js");
 
 const addToCart = async (req, res, next) => {

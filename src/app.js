@@ -7,6 +7,7 @@ const adminRoutes = require("./routes/admin.js");
 const shopRoutes = require("./routes/shop.js");
 const cartRoutes = require("./routes/cart.js");
 const orderRoutes = require("./routes/order.js");
+const authRoutes = require("./routes/auth.js");
 
 // Model Imports
 const User = require("./models/user.js");
@@ -43,6 +44,7 @@ app.use("/admin", adminRoutes);
 app.use("/shop", shopRoutes);
 app.use("/cart", cartRoutes);
 app.use("/order", orderRoutes);
+app.use("/auth", authRoutes);
 
 // Called when no route is matched
 app.use(error404);
