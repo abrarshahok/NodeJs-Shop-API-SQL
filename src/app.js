@@ -21,7 +21,7 @@ const OrderItem = require("./models/order-item.js");
 
 // Error Route
 const error404 = require("./middlewares/error404.js");
-const { authStateChecker } = require("./controllers/auth-controller.js");
+const isAuth = require("./middlewares/is-auth.js");
 
 // Initialize App
 const app = express();
@@ -64,8 +64,8 @@ app.use((req, res, next) => {
 app.use("/auth", authRoutes);
 app.use("/shop", shopRoutes);
 app.use("/admin", adminRoutes);
-app.use("/cart", authStateChecker, cartRoutes);
-app.use("/order", authStateChecker, orderRoutes);
+app.use("/cart", isAuth, cartRoutes);
+app.use("/order", isAuth, orderRoutes);
 
 // Called when no route is matched
 app.use(error404);
