@@ -96,25 +96,6 @@ Order.belongsToMany(Product, { through: OrderItem });
 sequelize
   // .sync({ force: true })
   .sync()
-  .then((_) => {
-    // Get Dummy User
-    return User.findByPk(1);
-  })
-  .then((user) => {
-    if (!user) {
-      // Create Dummy User
-      return User.create({ username: "abrar", password: "12345" });
-    }
-    // Get Dummy User
-    return user;
-  })
-  .then(async (user) => {
-    // Create User Cart
-    const cart = await user.getCart();
-    if (!cart) {
-      return user.createCart();
-    }
-  })
   .catch((err) => {
     console.log(err);
   });
