@@ -7,14 +7,14 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const errorHandler = require("../utils/error-handler.js");
 
-const transporter = nodemailer.createTransport(
-  sendgridTransport({
-    auth: {
-      api_user: "API_USER",
-      api_key: "API_KEY",
-    },
-  })
-);
+// const transporter = nodemailer.createTransport(
+//   sendgridTransport({
+//     auth: {
+//       api_user: "API_USER",
+//       api_key: "API_KEY",
+//     },
+//   })
+// );
 
 // getLogin using session
 const getLogin = async (req, res, next) => {
