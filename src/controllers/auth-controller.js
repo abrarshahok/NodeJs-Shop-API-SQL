@@ -135,7 +135,7 @@ const postSignup = async (req, res, next) => {
     });
 
     if (success) {
-      // transporter.sendMail({
+      // await transporter.sendMail({
       //   to: email,
       //   from: "abrar-shop-api@gmail.com",
       //   subject: "Signup succeeded",
