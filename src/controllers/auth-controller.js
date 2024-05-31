@@ -1,11 +1,13 @@
 const User = require("../models/user.js");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 // const nodemailer = require("nodemailer");
 // const sendgridTransport = require("nodemailer-sendgrid-transport");
 
 const { validationResult } = require("express-validator");
 const errorHandler = require("../utils/error-handler.js");
+const { Op } = require("sequelize");
 
 // const transporter = nodemailer.createTransport(
 //   sendgridTransport({
@@ -43,7 +45,9 @@ const postLogin = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res
+      .status(400)
+      .json({ errors: errors.array().map((err) => err.msg) });
   }
 
   const { email, password } = req.body;
@@ -167,9 +171,75 @@ const postLogout = async (req, res, next) => {
   return res.send({ success: false, message: "Logout Failed" });
 };
 
+// postResetPassword
+const postResetPassword = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const bytes = crypto.randomBytes(32);
+    const token = bytes.toString("hex");
+    console.log(token);
+    const user = await User.findOne({ where: { email: email } });
+    if (user) {
+      user.resetToken = token;
+      user.resetTokenExpiration = Date.now() + 10 * 60 * 1000;
+      await user.save();
+      return res.send({
+        success: true,
+        body: {
+          email: email,
+          token: token,
+          url: `http://localhost:3000/auth/set-new-password/${token}`,
+          message:
+            "Send confirm reset password request with new password in body to given url.",
+        },
+      });
+    }
+    return res.send({ success: false, message: "User with email not found!" });
+  } catch (error) {
+    next(errorHandler);
+  }
+};
+
+// setNewPassword
+const setNewPassword = async (req, res, next) => {
+  const { token } = req.params;
+  const { userId, newPassword } = req.body;
+  try {
+    const user = await User.findOne({
+      where: {
+        resetToken: token,
+        resetTokenExpiration: {
+          [Op.gt]: Date.now(),
+        },
+        id: userId,
+      },
+    });
+
+    if (user) {
+      user.password = await bcrypt.hash(newPassword, 12);
+      user.resetToken = null;
+      user.resetTokenExpiration = null;
+      await user.save();
+      return res.send({
+        success: true,
+        body: {
+          email: user.email,
+          newPassword: newPassword,
+          message: "Password reset success!",
+        },
+      });
+    }
+    return res.send({ success: false, message: "Invalid token or UserId!" });
+  } catch (error) {
+    next(errorHandler);
+  }
+};
+
 module.exports = {
   getLogin,
   postLogin,
   postSignup,
   postLogout,
+  postResetPassword,
+  setNewPassword,
 };
