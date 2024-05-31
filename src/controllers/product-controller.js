@@ -9,10 +9,17 @@ const addProduct = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  const image = req.file;
   const { title, price, description } = req.body;
 
+  if (!image) {
+    return res.status(400).json({ success: true, data: "Invalid Image" });
+  }
+
   try {
+    const imageUrl = `http://localhost:3000/${image.path}`;
     const newProduct = await req.session.user.createProduct({
+      image: imageUrl,
       title,
       price,
       description,
@@ -47,6 +54,7 @@ const updateProduct = async (req, res, next) => {
   }
 
   const { productId } = req.params;
+  const image = req.file;
   const { title, price, description } = req.body;
 
   try {
@@ -62,6 +70,7 @@ const updateProduct = async (req, res, next) => {
     if (title !== undefined) product.title = title;
     if (price !== undefined) product.price = price;
     if (description !== undefined) product.description = description;
+    if (image) product.image = image.path;
 
     await product.save();
 

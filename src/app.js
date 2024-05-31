@@ -3,6 +3,8 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const sequelize = require("./utils/database.js");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
+const multer = require("multer");
+const path = require("path");
 
 // Route Imports
 const adminRoutes = require("./routes/admin.js");
@@ -19,15 +21,20 @@ const CartItem = require("./models/cart-item.js");
 const Order = require("./models/order.js");
 const OrderItem = require("./models/order-item.js");
 
-// Error Route
+// Middlewares
 const error404 = require("./middlewares/error404.js");
 const isAuth = require("./middlewares/is-auth.js");
+const { fileStorage, fileFilter } = require("./middlewares/image-upload.js");
 
 // Initialize App
 const app = express();
 
 // Parsing Request Bodies
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+);
+app.use("/images", express.static(path.join(path.resolve(), "images")));
 app.use(bodyParser.json());
 
 // Initlizing session
