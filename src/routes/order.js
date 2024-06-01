@@ -3,10 +3,13 @@ const router = express.Router();
 
 const orderController = require("../controllers/order-controller.js");
 
-// cart/add-product => POST
+// cart/place-order => POST
 router.post("/place-order", orderController.placeOrder);
 
-// cart/get-all-cart-products => GET
+// cart/all-orders => GET
 router.get("/all-orders", orderController.getAllOrders);
+
+// cart/get-all-cart-products => GET
+router.get("/all-orders/:orderId", orderController.getInvoice);
 
 module.exports = router;
