@@ -12,7 +12,11 @@ const addToCart = async (req, res, next) => {
 
   const { productId } = req.body;
   try {
-    const cart = await req.session.cart;
+    let cart = await req.session.user.getCart();
+
+    if (!cart) {
+      cart = await req.session.user.createCart();
+    }
 
     const cartProducts = await cart.getProducts({
       where: { id: productId },
@@ -71,7 +75,7 @@ const removeProductFromCart = async (req, res, next) => {
   const { productId } = req.body;
 
   try {
-    const cart = await req.session.cart;
+    const cart = await req.session.user.getCart();
 
     const cartProducts = await cart.getProducts({
       where: { id: productId },
@@ -119,7 +123,7 @@ const removeProductFromCart = async (req, res, next) => {
 
 const getAllCartProducts = async (req, res, next) => {
   try {
-    const cart = await req.session.cart;
+    const cart = await req.session.user.getCart();
 
     const cartProducts = await cart.getProducts({
       where: { userId: req.session.user.id },
