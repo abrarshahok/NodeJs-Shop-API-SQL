@@ -77,14 +77,6 @@ const postLogin = async (req, res, next) => {
 
       req.session.user = user;
 
-      let cart = await req.session.user.getCart();
-
-      if (!cart) {
-        cart = await req.session.user.createCart();
-      }
-
-      req.session.cart = cart;
-
       return res.send({
         success: req.session.isLoggedIn,
         message: "Login Success",
