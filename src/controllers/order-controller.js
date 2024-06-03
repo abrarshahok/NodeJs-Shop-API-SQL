@@ -120,7 +120,7 @@ const generateInvoicedPdf = (order) => {
   products.forEach((product, index) => {
     const productId = product.id;
     const title = product.title;
-    const price = product.price / 100; // Assuming price is in cents
+    const price = product.price;
     const quantity = product.orderItem.quantity;
     const totalPrice = price * quantity;
     totalAmount += totalPrice;
@@ -128,8 +128,8 @@ const generateInvoicedPdf = (order) => {
     doc.font("Helvetica-Bold").text(`${index + 1}.${title}`);
     doc.font("Helvetica").text(`  Product ID: ${productId}`);
     doc.text(`  Quantity: ${quantity}`);
-    doc.text(`  Price per Unit: $${price.toFixed(2)}`);
-    doc.text(`  Total Price: $${totalPrice.toFixed(2)}`);
+    doc.text(`  Price per Unit: Rs.$${price.toFixed(2)}`);
+    doc.text(`  Total Price: Rs.$${totalPrice.toFixed(2)}`);
     doc.moveDown();
   });
 

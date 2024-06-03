@@ -33,11 +33,14 @@ const addProduct = async (req, res, next) => {
 
 const getProducts = async (req, res, next) => {
   try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
     let products;
     if (req.session.user) {
-      products = await req.session.user.getProducts();
+      products = await req.session.user.getProducts(
+        limit ? { limit: limit } : {}
+      );
     } else {
-      products = await Product.findAll();
+      products = await Product.findAll(limit ? { limit: limit } : {});
     }
 
     return res.status(200).json({ success: true, data: products });
